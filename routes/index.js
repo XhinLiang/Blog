@@ -4,26 +4,35 @@ var User = require('../models/user.js');
 module.exports = function(app) {
     app.get('/', function (req, res) {
         res.render('index', {
-            title : 'Index'
+            title : 'Index',
+            user: req.session.user,
+            success: req.flash('success').toString(),
+            error: req.flash('error').toString()
         });
     });
 
+    app.get('/register', checkNotLogin);
     app.get('/register', function (req, res) {
         res.render('register', {
-            title : 'Register'
+            title : 'Register',
+            user: req.session.user,
+            success: req.flash('success').toString(),
+            error: req.flash('error').toString()
         });
     });
 
+    app.post('/register', checkNotLogin);
     app.post('/register', function(req, res) {
         var password = req.body.password;
-        var passwordRepeat = req.body['password_re'];
+        var passwordRepeat = req.body['password_repeat'];
 
-        if (password_re != password) {
+        if (passwordRepeat != password) {
             req.flash('error', 'Password doesn\'t match.');
             return res.redirect('/register');
         }
 
         var md5 = crypto.createHash('md5');
+        //给密码加盐哈希
         passwordMD5 = md5.update(password).digest('hex');
 
         var newUser = new User({
@@ -53,31 +62,69 @@ module.exports = function(app) {
             });
         });
     });
-});
 
 
-app.get('/login', function (req, res) {
-    res.render('login', {
-        title : 'Login'
+    app.get('/login', checkNotLogin);
+    app.get('/login', function (req, res) {
+        res.render('login', {
+            title : 'Login',
+            user: req.session.user,
+            success: req.flash('success').toString(),
+            error: req.flash('error').toString()
+        });
     });
-});
 
-app.post('/login', function (req, res) {
-
-});
-
-app.get('/post', function (req, res) {
-    res.render('post', {
-        title: 'Post'
+    app.post('/login',checkLogin);
+    app.post('/login', function (req, res) {
+        var md5 = crypto.createHash('md5');
+        var password = md5.update(req.body.password).digest('hex');
+        User.get(req.body.name, function (err, user) {
+            if (!user) {
+                req.flash('error', 'User doesn\' exist. ');
+                return res.redirect('/login');
+            }
+            if (user.password != password) {
+                req.flash('error', 'Password doesn\'t match.');
+                return res.redirect('/login');
+            }
+            req.session.user = user;
+            req.flash('success', 'Login Success.');
+            res.redirect('/');
+        });
     });
-});
+
+    app.get('/post',checkLogin);
+    app.get('/post', function (req, res) {
+        res.render('post', {
+            title: 'Post'
+        });
+    });
 
 
-app.post('/post', function (req, res) {
+    app.post('/post',checkLogin);
+    app.post('/post', function (req, res) {
+    });
 
-});
+    app.get('/logout',checkLogin);
+    app.get('/logout', function (req, res) {
+        req.session.user = null;
+        req.flash('success', 'Logout Success.');
+        res.redirect('/');
+    });
 
-app.get('/logout', function (req, res) {
+    function checkLogin(req, res, next) {
+        if (!req.session.user) {
+            req.flash('error', 'Haven\'t login!');
+            res.redirect('/');
+        }
+        next();
+    }
 
-});
+    function checkNotLogin(req, res, next) {
+        if (req.session.user) {
+            req.flash('error', 'Already login!');
+            res.redirect('back');
+        }
+        next();
+    }
 };
