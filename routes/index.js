@@ -1,6 +1,7 @@
 var crypto = require('crypto');
 var User = require('../models/user.js');
 var Post = require('../models/post.js');
+var Comment = require('../models/comments.js');
 var multer = require('multer');
 
 function getFileName(){
@@ -250,6 +251,27 @@ module.exports = function(app) {
             }
             req.flash('success', 'Remove Success');
             res.redirect('/');
+        });
+    });
+
+    app.post('/u/:name/:day/:title', function (req, res) {
+        var date = new Date();
+        var time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
+        var comment = {
+            name: req.body.name,
+            email: req.body.email,
+            website: req.body.website,
+            time: time,
+            content: req.body.content
+        };
+        var newComment = new Comment(req.params.name, req.params.day, req.params.title, comment);
+        newComment.save(function (err) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('back');
+            }
+            req.flash('success', 'Comment Success');
+            res.redirect('back');
         });
     });
 

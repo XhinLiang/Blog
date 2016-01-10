@@ -6,7 +6,8 @@ function User(user) {
     this.email = user.eamil;
 };
 
-User.prototype.save = function(callback) {
+
+User.prototype.save = function (callback) {
     var user = {
         name: this.name,
         password: this.password,
@@ -45,7 +46,7 @@ User.get = function(name, callback) {
                 return callback(err);
             }
             collection.findOne({
-                 name: name
+                name: name
             }, function (err, user) {
                 mongodb.close();
                 if (err) {
