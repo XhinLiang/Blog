@@ -8,8 +8,8 @@ function Post(name, title, post) {
 }
 
 Post.prototype.save = function(callback) {
-    var date = new Date();
-    var saveTime = {
+    let date = new Date();
+    let saveTime = {
         date: date,
         year: date.getFullYear(),
         month: date.getFullYear() + "-" + (date.getMonth()),
@@ -17,7 +17,7 @@ Post.prototype.save = function(callback) {
         minute : date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes())
     };
 
-    var post = {
+    let post = {
         name: this.name,
         time: saveTime,
         title: this.title,
@@ -56,7 +56,7 @@ Post.getAll = function(name, callback) {
                 mongodb.close();
                 return callback(err);
             }
-            var query = {};
+            let query = {};
             if (name) {
                 query.name = name;
             }
@@ -88,14 +88,14 @@ Post.getLimit = function(name, limit, page, callback) {
             }
             let query = {};
             if (name) {
-                 query.name = name;
+                query.name = name;
             }
             collection.count(query, function (err, total) {
                 collection.find(query, {
                     skip: (page - 1) * limit,
                     limit: limit
                 }).sort({
-                     time: -1
+                    time: -1
                 }).toArray(function (err, docs) {
                     mongodb.close();
                     if (err) {
@@ -220,4 +220,32 @@ Post.remove = function(name, day, title, callback) {
         });
     });
 };
+
+Post.getArchive = function(callback) {
+    mongodb.open(function (err, db) {
+        if (err) {
+            return callback(err);
+        }
+        db.collection('posts', function (err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            collection.find({}, {
+                "name": 1,
+                "time": 1,
+                "title": 1
+            }).sort({
+                time: -1
+            }).toArray(function (err, docs) {
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, docs);
+            });
+        });
+    });
+};
+
 module.exports = Post;

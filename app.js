@@ -1,3 +1,4 @@
+'use strict'
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -29,6 +30,8 @@ app.use(cookieParser());
 app.use(session({
     secret: settings.cookieSecret,
     key: settings.dbName,
+    resave: true,
+    saveUninitialized: true,
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 30
     },
@@ -44,7 +47,7 @@ routes(app);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+    let err = new Error('Not Found');
     err.status = 404;
     next(err);
 });

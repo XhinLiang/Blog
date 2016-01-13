@@ -1,3 +1,4 @@
+'use strict'
 var mongodb = require('./db');
 
 function User(user) {
@@ -7,7 +8,7 @@ function User(user) {
 };
 
 
-User.prototype.save = function (callback) {
+User.prototype.save = function(callback) {
     var user = {
         name: this.name,
         password: this.password,

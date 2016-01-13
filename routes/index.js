@@ -6,7 +6,7 @@ var Comment = require('../models/comments.js');
 var multer = require('multer');
 
 function getFileName(){
-    var time = 1;
+    let time = 1;
     return function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + time);
         time ++;
@@ -56,16 +56,16 @@ module.exports = function(app) {
 
     app.post('/register', checkNotLogin);
     app.post('/register', function(req, res) {
-        var password = req.body.password;
-        var passwordRepeat = req.body['password_repeat'];
+        let password = req.body.password;
+        let passwordRepeat = req.body['password_repeat'];
         if (passwordRepeat != password) {
             req.flash('error', 'Password doesn\'t match.');
             return res.redirect('/register');
         }
-        var md5 = crypto.createHash('md5');
+        let md5 = crypto.createHash('md5');
         //给密码加盐哈希
         passwordMD5 = md5.update(password).digest('hex');
-        var newUser = new User({
+        let newUser = new User({
             name: req.body.name,
             password: passwordMD5,
             email: req.body.email
@@ -104,8 +104,8 @@ module.exports = function(app) {
 
     app.post('/login', checkNotLogin);
     app.post('/login', function(req, res) {
-        var md5 = crypto.createHash('md5');
-        var password = md5.update(req.body.password).digest('hex');
+        let md5 = crypto.createHash('md5');
+        let password = md5.update(req.body.password).digest('hex');
         User.get(req.body.name, function(err, user) {
             if (!user) {
                 req.flash('error', 'User doesn\' exist. ');
@@ -134,8 +134,8 @@ module.exports = function(app) {
 
     app.post('/post', checkLogin);
     app.post('/post', function(req, res) {
-        var currentUser = req.session.user;
-        var post = new Post(currentUser.name, req.body.title, req.body.post);
+        let currentUser = req.session.user;
+        let post = new Post(currentUser.name, req.body.title, req.body.post);
         post.save(function(err) {
             if (err) {
                 req.flash('error', err);
@@ -165,7 +165,7 @@ module.exports = function(app) {
 
     app.post('/upload', checkLogin);
     app.post('/upload', upload.array('picture',5), function (req, res, next) {
-        var filenames = '\n';
+        let filenames = '\n';
         req.files.forEach(function(file) {
             filenames += file.filename;
             filenames += '\n';
@@ -217,7 +217,7 @@ module.exports = function(app) {
 
     app.get('/edit/:name/:day/:title', checkLogin);
     app.get('/edit/:name/:day/:title', function (req, res) {
-        var currentUser = req.session.user;
+        let currentUser = req.session.user;
         Post.edit(currentUser.name, req.params.day, req.params.title,function (err, post) {
             if (err) {
                 req.flash(('error', err));
@@ -233,10 +233,26 @@ module.exports = function(app) {
         });
     });
 
+    app.get('/archive', function (req, res) {
+        Post.getArchive(function (err, posts) {
+            if (err) {
+                req.flash('error', err);
+                return res.redirect('/');
+            }
+            res.render('archive', {
+                title: 'Archive',
+                posts: posts,
+                user: req.session.user,
+                success: req.flash('success').toString(),
+                error: req.flash('error').toString()
+            });
+        });
+    });
+
 
     app.post('/edit/:name/:day/:title', checkLogin);
     app.post('/edit/:name/:day/:title', function (req, res) {
-        var currentUser = req.session.user;
+        let currentUser = req.session.user;
         Post.update(currentUser.name, req.params.day, req.params.title, req.body.post, function (err) {
             var url = encodeURI('/u/' +req.params.name + '/' + req.params.day + '/' + req.params.title);
             if (err) {
@@ -251,7 +267,7 @@ module.exports = function(app) {
 
     app.get('/remove/:name/:day/:title', checkLogin);
     app.get('/remove/:name/:day/:title', function (req, res) {
-        var currentUser = req.session.user;
+        let currentUser = req.session.user;
         Post.remove(currentUser.name, req.params.day, req.params.title, function (err) {
             if (err) {
                 req.flash('error', err);
@@ -263,16 +279,16 @@ module.exports = function(app) {
     });
 
     app.post('/u/:name/:day/:title', function (req, res) {
-        var date = new Date();
-        var time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
-        var comment = {
+        let date = new Date();
+        let time = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
+        let comment = {
             name: req.body.name,
             email: req.body.email,
             website: req.body.website,
             time: time,
             content: req.body.content
         };
-        var newComment = new Comment(req.params.name, req.params.day, req.params.title, comment);
+        let newComment = new Comment(req.params.name, req.params.day, req.params.title, comment);
         newComment.save(function (err) {
             if (err) {
                 req.flash('error', err);

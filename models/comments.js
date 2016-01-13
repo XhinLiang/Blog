@@ -1,5 +1,5 @@
+'use strict'
 var mongodb = require('./db.js');
-
 function Comment(name, day, title, comment) {
     this.name = name;
     this.day = day;
@@ -8,10 +8,10 @@ function Comment(name, day, title, comment) {
 }
 
 Comment.prototype.save = function(callback) {
-    var name = this.name;
-    var day = this.day;
-    var title = this.title;
-    var comment = this.comment;
+    let name = this.name;
+    let day = this.day;
+    let title = this.title;
+    let comment = this.comment;
     mongodb.open(function (err, db) {
         if (err) {
             return callback(err);
