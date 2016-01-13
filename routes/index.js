@@ -1,3 +1,4 @@
+'use strict'
 var crypto = require('crypto');
 var User = require('../models/user.js');
 var Post = require('../models/post.js');
@@ -25,14 +26,18 @@ var upload = multer({
 
 module.exports = function(app) {
     app.get('/', function(req, res) {
-        Post.getAll(null, function(err, queryPosts) {
+        let page = parseInt(req.query.p) || 1;
+        Post.getLimit(null, 10, page, function(err, posts, total) {
             if (err) {
                 queryPosts = [];
             }
             res.render('index', {
                 title: 'Index',
                 user: req.session.user,
-                posts: queryPosts,
+                posts: posts,
+                page: page,
+                isFirstPage: (page -1) == 0,
+                isLastPage: ((page -1) * 10 + posts.length) == total,
                 success: req.flash('success').toString(),
                 error: req.flash('error').toString()
             });
@@ -170,12 +175,13 @@ module.exports = function(app) {
     });
 
     app.get('/u/:name', function (req, res) {
+        let page = parseInt(req.query.p) || 1;
         User.get(req.params.name, function (err, user) {
             if (!user) {
                 req.flash('error', 'User doesn\'t Exist!');
                 return res.redirect('/');
             }
-            Post.getAll(user.name, function (err, posts) {
+            Post.getLimit(user.name, 10, page, function (err, posts, total) {
                 if (err) {
                     req.flash('error', err);
                     return res.redirect('/');
@@ -183,6 +189,8 @@ module.exports = function(app) {
                 res.render('user', {
                     title: user.name,
                     posts: posts,
+                    isFirstPage: (page - 1) == 0,
+                    isLastPage: ((page - 1) * 10 + posts.length) == total,
                     user: req.session.user,
                     success: req.flash('success').toString(),
                     error: req.flash('error').toString()

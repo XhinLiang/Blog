@@ -1,3 +1,4 @@
+'use strict'
 var mongodb = require('./db');
 var markdown = require('markdown').markdown;
 function Post(name, title, post) {
@@ -70,6 +71,41 @@ Post.getAll = function(name, callback) {
                     doc.post = markdown.toHTML(doc.post);
                 });
                 callback(null, docs);
+            });
+        });
+    });
+};
+
+Post.getLimit = function(name, limit, page, callback) {
+    mongodb.open(function (err, db) {
+        if (err) {
+            return callback(err);
+        }
+        db.collection('posts', function (err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            let query = {};
+            if (name) {
+                 query.name = name;
+            }
+            collection.count(query, function (err, total) {
+                collection.find(query, {
+                    skip: (page - 1) * limit,
+                    limit: limit
+                }).sort({
+                     time: -1
+                }).toArray(function (err, docs) {
+                    mongodb.close();
+                    if (err) {
+                        return callback(err);
+                    }
+                    docs.forEach(function (doc) {
+                        doc.post = markdown.toHTML(doc.post);
+                    });
+                    callback(null, docs, total);
+                });
             });
         });
     });
