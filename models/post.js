@@ -51,40 +51,40 @@ Post.prototype.save = function(callback) {
 
 //返回含有特定标签的所有文章
 Post.getTag = function(tag, callback) {
-  mongodb.open(function (err, db) {
-    if (err) {
-      return callback(err);
-    }
-    db.collection('posts', function (err, collection) {
-      if (err) {
-        mongodb.close();
-        return callback(err);
-      }
-      //查询所有 tags 数组内包含 tag 的文档
-      //并返回只含有 name、time、title 组成的数组
-      collection.find({
-        "tags": tag
-      }, {
-        "name": 1,
-        "time": 1,
-        "title": 1
-      }).sort({
-        time: -1
-      }).toArray(function (err, docs) {
-        mongodb.close();
+    mongodb.open(function (err, db) {
         if (err) {
-          return callback(err);
+            return callback(err);
         }
-        callback(null, docs);
-      });
+        db.collection('posts', function (err, collection) {
+            if (err) {
+                mongodb.close();
+                return callback(err);
+            }
+            //查询所有 tags 数组内包含 tag 的文档
+            //并返回只含有 name、time、title 组成的数组
+            collection.find({
+                "tags": tag
+            }, {
+                "name": 1,
+                "time": 1,
+                "title": 1
+            }).sort({
+                time: -1
+            }).toArray(function (err, docs) {
+                mongodb.close();
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, docs);
+            });
+        });
     });
-  });
 };
 
 Post.getTags = function(callback) {
     mongodb.open(function (err, db) {
         if (err) {
-        return callback(err);
+            return callback(err);
         }
         db.collection('posts', function (err, collection) {
             if (err) {
